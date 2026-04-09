@@ -19,7 +19,6 @@ The current implementation is intentionally narrow:
 
 ## Signal Backend Status
 
-The repository does not yet include a `presage`-backed Signal adapter.
 The repository now includes a feature-gated Whisperfish `presage` integration
 scaffold, but it is not yet full end-to-end parity.
 
@@ -70,6 +69,79 @@ Current state of the `presage` backend scaffold:
 - send/sendAttachment are still explicitly unimplemented in this backend path
   because upstream `presage` send futures are not `Send` and need a dedicated
   command worker architecture
+
+## Prepare To Test
+
+If you only want to test the HTTP/API contract, the default mock backend is
+enough.
+
+If you want to test against a real Signal account, prepare:
+
+- a dedicated Signal test account, not your primary personal account
+- a second Signal account or device to send messages to and from the test
+  account
+- `protobuf-compiler` installed locally so the `presage` backend can build
+- a local sqlite path for the `presage` store, for example
+  `./signal-gatewayd.presage.sqlite`
+
+Build the real backend:
+
+```bash
+cargo check -p gatewayd --features presage-backend
+```
+
+Run the daemon with the real backend selected:
+
+```bash
+SIGNAL_GATEWAY_BACKEND=presage \
+SIGNAL_PRESAGE_DB_PATH=./signal-gatewayd.presage.sqlite \
+SIGNAL_PRESAGE_DEVICE_NAME=signal-gatewayd \
+cargo run -p gatewayd --features presage-backend
+```
+
+Then call:
+
+```bash
+curl -X POST http://127.0.0.1:3000/admin/link-device
+```
+
+and scan the returned provisioning URL with the primary Signal device to link
+the gateway as a secondary device.
+
+## How To Test
+
+Current practical test flow:
+
+1. Build and run the daemon.
+2. For mock/backend API validation, run the normal Rust checks:
+
+```bash
+cargo test --workspace --all-targets
+cargo clippy --workspace --all-targets -- -D warnings
+```
+
+3. For live gateway smoke checks, export:
+
+```bash
+export SIGNAL_GATEWAY_ENABLE_MANUAL=1
+export SIGNAL_GATEWAY_BASE_URL=http://127.0.0.1:3000
+export SIGNAL_GATEWAY_ACCOUNT_ID=default
+export SIGNAL_TEST_CONVERSATION_ID='<recipient or conversation id>'
+```
+
+4. Run:
+
+```bash
+./scripts/manual-real-signal-smoke.sh
+```
+
+Interpretation:
+
+- on the mock backend, health/readiness and send/idempotency checks should pass
+- on the current `presage` backend scaffold, health/link/load validation is the
+  main thing that works today
+- outbound send and attachment send are still not implemented on the real
+  backend path, so full human-to-human messaging is not ready yet
 
 ## Manual Smoke Tests
 
