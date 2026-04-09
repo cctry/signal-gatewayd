@@ -4,6 +4,10 @@ edition.workspace = true
 license.workspace = true
 version.workspace = true
 
+[features]
+default = []
+presage-backend = ["gateway-signal/presage-backend"]
+
 [dependencies]
 anyhow.workspace = true
 axum.workspace = true

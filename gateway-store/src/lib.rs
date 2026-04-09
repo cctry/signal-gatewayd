@@ -1,6 +1,6 @@
 use anyhow::Context;
 use chrono::{DateTime, Utc};
-use gateway_core::{AdminStatus, GatewayConfig, GatewayHealth, LinkDeviceResponse};
+use gateway_core::{AdminStatus, GatewayConfig, GatewayHealth};
 use rusqlite::{Connection, OptionalExtension, params};
 use std::path::Path;
 use std::sync::{Arc, Mutex};
@@ -114,21 +114,21 @@ impl GatewayStore {
         })
     }
 
-    pub fn mark_linked(&self, cfg: &GatewayConfig) -> anyhow::Result<LinkDeviceResponse> {
-        let uri = format!("sgd://link/{}", cfg.account_id);
+    pub fn set_linked(
+        &self,
+        cfg: &GatewayConfig,
+        linked: bool,
+        linked_uri: Option<&str>,
+    ) -> anyhow::Result<()> {
         let now = Utc::now().to_rfc3339();
         let conn = self.inner.lock().expect("sqlite mutex poisoned");
         conn.execute(
             "INSERT INTO account(account_id, linked, linked_uri, updated_at)
-             VALUES(?1, 1, ?2, ?3)
-             ON CONFLICT(account_id) DO UPDATE SET linked = 1, linked_uri = excluded.linked_uri, updated_at = excluded.updated_at",
-            params![cfg.account_id, uri, now],
+             VALUES(?1, ?2, ?3, ?4)
+             ON CONFLICT(account_id) DO UPDATE SET linked = excluded.linked, linked_uri = excluded.linked_uri, updated_at = excluded.updated_at",
+            params![cfg.account_id, if linked { 1 } else { 0 }, linked_uri, now],
         )?;
-        Ok(LinkDeviceResponse {
-            account_id: cfg.account_id.clone(),
-            linked: true,
-            uri,
-        })
+        Ok(())
     }
 
     pub fn is_linked(&self, account_id: &str) -> anyhow::Result<bool> {

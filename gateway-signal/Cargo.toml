@@ -4,12 +4,29 @@ edition.workspace = true
 license.workspace = true
 version.workspace = true
 
+[features]
+default = []
+presage-backend = [
+    "dep:futures",
+    "dep:hex",
+    "dep:mime_guess",
+    "dep:presage",
+    "dep:presage-store-sqlite",
+    "dep:url",
+]
+
 [dependencies]
 anyhow.workspace = true
 async-trait.workspace = true
 chrono.workspace = true
+futures = { workspace = true, optional = true }
 gateway-core = { path = "../gateway-core" }
+hex = { workspace = true, optional = true }
+mime_guess = { workspace = true, optional = true }
+presage = { git = "https://github.com/whisperfish/presage", package = "presage", optional = true }
+presage-store-sqlite = { git = "https://github.com/whisperfish/presage", package = "presage-store-sqlite", optional = true }
 tokio.workspace = true
 tokio-stream.workspace = true
 tracing.workspace = true
+url = { workspace = true, optional = true }
 uuid.workspace = true

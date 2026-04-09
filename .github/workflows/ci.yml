@@ -37,3 +37,6 @@ jobs:
 
       - name: Test
         run: cargo test --workspace --all-targets
+
+      - name: Check Presage Backend Feature
+        run: cargo check -p gatewayd --features presage-backend

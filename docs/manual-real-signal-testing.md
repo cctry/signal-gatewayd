@@ -1,9 +1,10 @@
 # Manual Real-Signal Testing
 
-This repository does not yet ship a `presage`-backed Signal transport. The
-manual smoke suite in this document is meant to validate a running gateway over
-HTTP, and becomes the protocol smoke suite once the real Signal backend is
-implemented.
+This repository now ships a feature-gated `presage` Signal transport scaffold.
+The manual smoke suite in this document validates a running gateway over HTTP.
+Today the real backend path is mainly useful for account load/link and compile
+compatibility work; the outbound send path still needs a dedicated local worker
+before it is ready for real end-to-end messaging.
 
 ## Why this exists
 
@@ -20,7 +21,24 @@ CI currently covers:
 - weekly dependency update builds
 
 CI does **not** currently prove that Signal protocol behavior still works against
-the real network. That requires a real account and should stay opt-in.
+the real network. It now does compile the real backend feature, which catches a
+meaningful class of upstream breakage, but live-network validation still
+requires a real account and should stay opt-in.
+
+## Build the real backend
+
+```bash
+cargo check -p gatewayd --features presage-backend
+```
+
+Run the daemon with:
+
+```bash
+SIGNAL_GATEWAY_BACKEND=presage \
+SIGNAL_PRESAGE_DB_PATH=./signal-gatewayd.presage.sqlite \
+SIGNAL_PRESAGE_DEVICE_NAME=signal-gatewayd \
+cargo run -p gatewayd --features presage-backend
+```
 
 ## Required environment
 
@@ -33,22 +51,31 @@ export SIGNAL_GATEWAY_BASE_URL=http://127.0.0.1:3000
 export SIGNAL_GATEWAY_ACCOUNT_ID=default
 ```
 
+Meaning:
+
+- `SIGNAL_GATEWAY_ENABLE_MANUAL=1`: an explicit safety switch so ignored manual
+  tests do not run by accident.
+- `SIGNAL_GATEWAY_BASE_URL`: the base URL of the running local daemon under
+  test, usually `http://127.0.0.1:3000`.
+- `SIGNAL_GATEWAY_ACCOUNT_ID`: the account identifier expected by the gateway.
+  Today that defaults to `default`.
+
 For send-path smoke tests, also export a target conversation:
 
 ```bash
 export SIGNAL_TEST_CONVERSATION_ID='<recipient or conversation id>'
 ```
 
-If your send flow requires a specific account identifier, set:
+Meaning:
 
-```bash
-export SIGNAL_GATEWAY_ACCOUNT_ID='<account id>'
-```
+- `SIGNAL_TEST_CONVERSATION_ID`: the conversation or recipient ID that the
+  gateway should send to for the manual send-path smoke test. If you leave it
+  unset, health/readiness checks still run, but the send smoke test self-skips.
 
 ## Run the smoke tests
 
 ```bash
-cargo test -p gatewayd --test manual_gateway_smoke -- --ignored --nocapture
+./scripts/manual-real-signal-smoke.sh
 ```
 
 ## What the smoke tests validate
@@ -57,6 +84,10 @@ cargo test -p gatewayd --test manual_gateway_smoke -- --ignored --nocapture
 - `/ready` returns either `200` or `503` with a reachable daemon
 - `send` over JSON-RPC succeeds when a target conversation is configured
 - idempotency returns the same `message_id` for repeated requests
+
+At the moment, the manual send-path smoke test is only expected to succeed on
+the mock backend. The `presage` backend still returns an explicit unimplemented
+error on outbound send operations.
 
 ## Recommended protocol-change checklist
 

@@ -16,8 +16,16 @@ impl AdminService {
     }
 
     pub async fn link_device(&self) -> anyhow::Result<LinkDeviceResponse> {
-        let _ = self.client.link_device(&self.cfg.account_id).await?;
-        self.store.mark_linked(&self.cfg)
+        let uri = self.client.link_device(&self.cfg.account_id).await?;
+        let linked = self.client.linked();
+        if linked {
+            self.store.set_linked(&self.cfg, true, Some(&uri))?;
+        }
+        Ok(LinkDeviceResponse {
+            account_id: self.cfg.account_id.clone(),
+            linked,
+            uri,
+        })
     }
 
     pub fn status(&self) -> anyhow::Result<AdminStatus> {
