@@ -17,6 +17,19 @@ The current implementation is intentionally narrow:
 - no full user CLI
 - no real Signal network adapter yet
 
+## Signal Backend Status
+
+The repository does not yet include a `presage`-backed Signal adapter.
+
+Current backend coverage is:
+
+- mock backend contract tests in CI
+- HTTP/API regression tests in CI
+- manual live-gateway smoke tests for a running daemon
+
+Once the real Signal backend lands, the manual smoke tests become the first line
+of defense against upstream Signal-side protocol changes.
+
 ## CI
 
 GitHub Actions runs:
@@ -27,6 +40,18 @@ GitHub Actions runs:
 - a scheduled weekly `cargo update` compatibility run to surface upstream dependency breakage early
 
 Dependabot is configured for Rust crates and GitHub Actions updates.
+
+## Manual Smoke Tests
+
+There is a manual live-gateway smoke test you can run against a locally running
+daemon:
+
+```bash
+cargo test -p gatewayd --test manual_gateway_smoke -- --ignored --nocapture
+```
+
+See [docs/manual-real-signal-testing.md](/home/cctry/signal-gatewayd/docs/manual-real-signal-testing.md)
+for the environment variables and recommended workflow.
 
 ## Run
 
