@@ -1,0 +1,25 @@
+[package]
+name = "gateway-http"
+edition.workspace = true
+license.workspace = true
+version.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+axum.workspace = true
+chrono.workspace = true
+gateway-admin = { path = "../gateway-admin" }
+gateway-core = { path = "../gateway-core" }
+gateway-signal = { path = "../gateway-signal" }
+gateway-store = { path = "../gateway-store" }
+http.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tokio.workspace = true
+tokio-stream.workspace = true
+tower-http.workspace = true
+tracing.workspace = true
+
+[dev-dependencies]
+http-body-util.workspace = true
+tower.workspace = true

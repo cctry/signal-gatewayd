@@ -1,0 +1,16 @@
+[package]
+name = "gatewayd"
+edition.workspace = true
+license.workspace = true
+version.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+axum.workspace = true
+gateway-core = { path = "../gateway-core" }
+gateway-http = { path = "../gateway-http" }
+gateway-signal = { path = "../gateway-signal" }
+gateway-store = { path = "../gateway-store" }
+tokio.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true

@@ -1,0 +1,12 @@
+[package]
+name = "gateway-store"
+edition.workspace = true
+license.workspace = true
+version.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+chrono.workspace = true
+gateway-core = { path = "../gateway-core" }
+rusqlite.workspace = true
+serde_json.workspace = true
