@@ -138,8 +138,8 @@ mod presage_backend {
             protocol::ServiceId,
         },
         manager::{Linking, Registered},
-        model::messages::Received,
         model::identity::OnNewIdentity,
+        model::messages::Received,
         store::{ContentExt, Thread},
     };
     use presage_store_sqlite::SqliteStore;
@@ -189,7 +189,9 @@ mod presage_backend {
                 })
         }
 
-        async fn load_registered_manager(&self) -> anyhow::Result<Option<Manager<SqliteStore, Registered>>> {
+        async fn load_registered_manager(
+            &self,
+        ) -> anyhow::Result<Option<Manager<SqliteStore, Registered>>> {
             let store = self.open_store().await?;
             match Manager::load_registered(store).await {
                 Ok(manager) => Ok(Some(manager)),
@@ -227,7 +229,8 @@ mod presage_backend {
                             Received::QueueEmpty => info!("presage receive queue drained"),
                             Received::Contacts => info!("presage contact sync completed"),
                             Received::Content(content) => {
-                                if let Some(event) = normalize_content(&account_id, content.as_ref())
+                                if let Some(event) =
+                                    normalize_content(&account_id, content.as_ref())
                                 {
                                     let _ = tx.send(event);
                                 }
@@ -402,9 +405,9 @@ mod presage_backend {
                 });
             });
 
-            let url = provisioning_rx
-                .await
-                .map_err(|_| anyhow!("failed to receive provisioning URL from presage link flow"))?;
+            let url = provisioning_rx.await.map_err(|_| {
+                anyhow!("failed to receive provisioning URL from presage link flow")
+            })?;
             if url.starts_with("failed to receive provisioning URL") {
                 return Err(anyhow!(url));
             }
