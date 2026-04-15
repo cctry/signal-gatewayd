@@ -43,9 +43,9 @@ async fn main() -> anyhow::Result<()> {
 
     #[cfg(not(feature = "presage-backend"))]
     let client: Arc<dyn gateway_signal::SignalClient> = match backend.as_str() {
-        "presage" => anyhow::bail!(
-            "signal-gatewayd was built without the `presage-backend` feature"
-        ),
+        "presage" => {
+            anyhow::bail!("signal-gatewayd was built without the `presage-backend` feature")
+        }
         _ => Arc::new(MockSignalClient::new(cfg.account_id.clone())),
     };
 
