@@ -17,7 +17,7 @@ version = "0.1.0"
 [workspace.dependencies]
 anyhow = "1.0.100"
 async-trait = "0.1.89"
-axum = "0.8.6"
+axum = "0.8.9"
 chrono = { version = "0.4.42", features = ["serde"] }
 futures = "0.3.31"
 hex = "0.4.3"
